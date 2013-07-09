@@ -6,7 +6,7 @@ This is a plugin for WordPress that adds shortcodes for easier use of the Bootst
 ## Requirements
 This plugin won't do anything if you don't have website built with the [Twitter Bootstrap framework](http://twitter.github.com/bootstrap/). **The plugin does not include the Bootstrap framework**.
 
-The plugin is tested to work with ```Bootstrap version 2.1.1``` and ```WordPress 3.4.2```.
+The plugin is tested to work with ```Bootstrap version 2.3.2``` and ```WordPress 3.4.2```.
 
 ## Installation
 To install this plugin, just download it, and drop the folder in the ```wp-content/plugins/```. Then login to WordPress and activate the plugin.
@@ -32,10 +32,10 @@ You use the shortcodes just like you would with any other shortcode, with the ex
 
 
 #### Buttons
-	[button type="success" size="large" link="#"] … [/button]
+	[button type="success" size="large" extra="extracssclass" link="#"] … [/button]
 
 #### Alerts
-	[alert type="success"] … [/alert]
+	[alert type="success" close="close"] … [/alert]
 
 #### Code
 	[code] … [/code]
@@ -47,11 +47,12 @@ You use the shortcodes just like you would with any other shortcode, with the ex
 	[badge type="success"] … [/badge]
 
 #### Wells
-	[well] … [/well]
+	[well type="large"] … [/well]
 
 #### Icons
 	[icon type="arrow"]
-	[icon_white type="arrow"]
+	Or
+	[icon type="arrow" color="white"]
 
 #### Grid
 	[row]

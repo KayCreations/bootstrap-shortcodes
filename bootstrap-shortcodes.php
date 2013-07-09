@@ -3,7 +3,7 @@
 Plugin Name: Bootstrap Shortcodes
 Plugin URI: http://wp-snippets.com/freebies/bootstrap-shortcodes or https://github.com/filipstefansson/bootstrap-shortcodes
 Description: The plugin adds a shortcodes for all Bootstrap elements.
-Version: 1.0
+Version: 1.1
 Author: Filip Stefansson
 Author URI: http://wp-snippets.com
 Modified by: TwItCh AKA Dustin Crisman twitch@twitch.es
@@ -13,41 +13,24 @@ Modified URI: https://github.com/KayCreations/bootstrap-shortcodes/
 License: GPL2
 */
 
-/*  Copyright 2012  Filipstefansson  (email : filip.stefansson@gmail.com)
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License, version 2, as 
-    published by the Free Software Foundation.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-*/
-
-/* ============================================================= */
-
-
 class BoostrapShortcodes
 {
 
+    /**
+     * construct
+     */
     function __construct()
     {
         add_action('init', array($this, 'add_shortcodes'));
+
+        // Remove wpautop from content
+        remove_filter('the_content', 'wpautop');
+        add_filter('the_content', 'wpautop', 99);
     }
 
-    /*--------------------------------------------------------------------------------------
-      *
-      * add_shortcodes
-      *
-      * @author Filip Stefansson
-      * @since 1.0
-      *
-      *-------------------------------------------------------------------------------------*/
+    /**
+     * add_shortcoes
+     */
     function add_shortcodes()
     {
         add_shortcode('button', array($this, 'bs_button'));
@@ -67,180 +50,185 @@ class BoostrapShortcodes
         add_shortcode('tab', array($this, 'bs_tab'));
     }
 
-
-    /*--------------------------------------------------------------------------------------
-      *
-      * bs_button
-      *
-      * @author Filip Stefansson
-      * @since 1.0
-      * //DW mod added xclass var
-      *-------------------------------------------------------------------------------------*/
+    /**
+     * bs_button
+     * 
+     * @return string button
+     */
     function bs_button($atts, $content = null)
     {
-        extract(shortcode_atts(array(
-            "type" => '',
-            "size" => '',
-            "link" => '',
-            "xclass" => ''
-        ), $atts));
+        $class = array('btn');
 
-        return '<a href="' . $link . '" class="btn btn-' . $type . ' btn-' . $size . ' ' . $xclass . '">' . do_shortcode($content) . '</a>';
+        if (isset($atts['type']) && ($type = preg_replace('/^btn-/', '', $atts['type']))) {
+            $class[] = esc_attr('btn-' . $type);
+        }
+
+        if (isset($atts['size']) && ($type = preg_replace('/^btn-/', '', $atts['size']))) {
+            $class[] = esc_attr('btn-' . $type);
+        }
+
+        if (isset($atts['extra'])) {
+            $class[] = esc_attr($atts['extra']);
+        }
+
+        return sprintf('<a href="%s" class="%s">%s</a>', 
+            $atts['link'], 
+            join(' ', $class), 
+            do_shortcode($content)
+        );
     }
 
-
-    /*--------------------------------------------------------------------------------------
-      *
-      * bs_alert
-      *
-      * @author Filip Stefansson
-      * @since 1.0
-      *
-      *-------------------------------------------------------------------------------------*/
+    /**
+     * bs_alert
+     * 
+     * @return string alert
+     */
     function bs_alert($atts, $content = null)
     {
-        extract(shortcode_atts(array(
-            "type" => '',
-            "close" => true
-        ), $atts));
+        $class = array('alert');
 
-        return '<div class="alert alert-' . $type . '">' . do_shortcode($content) . '<button type="button" class="close" data-dismiss="alert">&times;</button></div>';
+        if (isset($atts['type']) && ($type = preg_replace('/^alert-/', '', $atts['type']))) {
+            $class[] = esc_attr('alert-' . $type);
+        }
+
+        if (isset($atts['close']))
+            $close = '<button type="button" class="close" data-dismiss="alert">&times;</button>';
+
+        return sprintf('<div class="alert %s">%s %s</div>',
+            join(' ', $class),
+            do_shortcode($content), 
+            $close
+        );
+
     }
 
-
-    /*--------------------------------------------------------------------------------------
-      *
-      * bs_code
-      *
-      * @author Filip Stefansson
-      * @since 1.0
-      *
-      *-------------------------------------------------------------------------------------*/
+    /**
+     * bs_code
+     * 
+     * @return string code
+     */
     function bs_code($atts, $content = null)
     {
-        extract(shortcode_atts(array(
-            "type" => '',
-            "size" => '',
-            "link" => ''
-        ), $atts));
-
-        return '<pre><code>' . do_shortcode($content) . '</code></pre>';
+        return sprintf('<pre><code>%s</code></pre>', do_shortcode($content));
     }
 
-
-    /*--------------------------------------------------------------------------------------
-      *
-      * bs_span
-      *
-      * @author Filip Stefansson
-      * @since 1.0
-      *
-      *-------------------------------------------------------------------------------------*/
+    /**
+     * bs_span
+     * 
+     * @return string span
+     */
     function bs_span($atts, $content = null)
     {
-        extract(shortcode_atts(array(
-            "size" => 'size'
-        ), $atts));
+        $class = array();
 
-        return '<div class="span' . $size . '">' . do_shortcode($content) . '</div>';
+        if (isset($atts['size'])) {
+            $class[] = esc_attr('span' . $atts['size']);
+        } else {
+            $class[] = 'span6';
+        }
+
+        if (isset($atts['extra'])) {
+            $class[] = esc_attr($atts['extra']);
+        }
+
+        return sprintf('<div class="%s">%s</div>',
+            join(' ', $class),
+            do_shortcode($content)
+        );
     }
 
-
-    /*--------------------------------------------------------------------------------------
-      *
-      * bs_row
-      *
-      * @author Filip Stefansson
-      * @since 1.0
-      *
-      *-------------------------------------------------------------------------------------*/
+    /**
+     * bs_row
+     * 
+     * @return string row
+     */
     function bs_row($atts, $content = null)
     {
-        return '<div class="row-fluid">' . do_shortcode($content) . '</div>';
+        $class = array();
+
+        if (isset($atts['method']) && ($method = preg_replace('/^row-/', '', $atts['method']))) {
+            $class[] = esc_attr('row-' . $method);
+        } else {
+            $class[] = 'row';
+        }
+
+        if (isset($atts['extra']) && (preg_match('/^[a-z]+$/', $atts['extra']))) {
+            $class[] = esc_attr($atts['extra']);
+        } 
+
+        return sprintf("<div class='%s'>%s</div>",
+            join(' ', $class),
+            do_shortcode($content) 
+        );
     }
 
-
-    /*--------------------------------------------------------------------------------------
-      *
-      * bs_label
-      *
-      * @author Filip Stefansson
-      * @since 1.0
-      *
-      *-------------------------------------------------------------------------------------*/
+    /**
+     * bs_label
+     * 
+     * @return string label
+     */
     function bs_label($atts, $content = null)
     {
-        extract(shortcode_atts(array(
-            "type" => 'type'
-        ), $atts));
+        $class = array('label');
 
-        return '<span class="label label-' . $type . '">' . do_shortcode($content) . '</span>';
+        if (isset($atts['type']) && preg_match('/^[a-z]+$/', $atts['type'])) {
+            $class[] = 'label-' . esc_attr($atts['type']);
+        }
+
+        return sprintf('<span class="%s">%s</span>', 
+            join(' ', $class),
+            do_shortcode($content)
+        );
     }
 
-
-    /*--------------------------------------------------------------------------------------
-      *
-      * bs_badge
-      *
-      * @author Filip Stefansson
-      * @since 1.0
-      *
-      *-------------------------------------------------------------------------------------*/
+    /**
+     * bs_badge
+     * 
+     * @return string badge
+     */
     function bs_badge($atts, $content = null)
     {
-        extract(shortcode_atts(array(
-            "type" => 'type'
-        ), $atts));
+        $class = array('badge');
 
-        return '<span class="badge badge-' . $type . '">' . do_shortcode($content) . '</span>';
+        if (isset($atts['type']) && ($type = preg_replace('/^badge-/', '', $atts['type']))) {
+            $class[] = esc_attr('badge-' . $type);
+        }
+
+        return sprintf('<span class="%s">%s</span>', 
+            join(' ', $class), 
+            do_shortcode($content)
+        );
     }
 
-
-    /*--------------------------------------------------------------------------------------
-      *
-      * bs_icon
-      *
-      * @author Filip Stefansson
-      * @since 1.0
-      *  //DW Mod to add icon sizing
-      *-------------------------------------------------------------------------------------*/
+    /**
+     * bs_icon
+     * 
+     * @return string icon
+     */
     function bs_icon($atts, $content = null)
     {
-        extract(shortcode_atts(array(
-            "type" => 'type',
-            "size" => 'normal',
-        ), $atts));
+        $class = array();
 
-        return '<i class="icon icon-' . $type . ' icon-' . $size . '"></i>';
+        if (isset($atts['type']) && ($type = preg_replace('/^icon-/', '', $atts['type']))) {
+            $class[] = esc_attr('icon-' . $type);
+        } else {
+            $class[] = 'icon-heart';
+        }
+
+        if (isset($atts['color'])) {
+            $class[] = 'icon-white';
+        }
+
+        return sprintf('<i class="%s"></i>',
+            join(' ', $class)
+        );
     }
 
-
-    /*--------------------------------------------------------------------------------------
-      *
-      * bs_icon_white
-      *
-      * @author Filip Stefansson
-      * @since 1.0
-      *
-      *-------------------------------------------------------------------------------------*/
-    function bs_icon_white($atts, $content = null)
-    {
-        extract(shortcode_atts(array(
-            "type" => 'type'
-        ), $atts));
-
-        return '<i class="icon icon-' . $type . ' icon-white"></i>';
-    }
-
-
-    /*--------------------------------------------------------------------------------------
-      *
-      * simple_table
-      *
-      * @author Filip Stefansson
-      * @since 1.0
-      *
-      *-------------------------------------------------------------------------------------*/
+    /**
+     * bs_table
+     * 
+     * @return string table
+     */
     function bs_table($atts)
     {
         extract(shortcode_atts(array(
@@ -248,6 +236,7 @@ class BoostrapShortcodes
             'data' => 'none',
             'type' => 'type'
         ), $atts));
+
         $cols = explode(',', $cols);
         $data = explode(',', $data);
         $total = count($cols);
@@ -271,33 +260,32 @@ class BoostrapShortcodes
     }
 
 
-    /*--------------------------------------------------------------------------------------
-      *
-      * bs_well
-      *
-      * @author Filip Stefansson
-      * @since 1.0
-      *
-      *-------------------------------------------------------------------------------------*/
+    /**
+     * bs_well
+     * 
+     * @return string well
+     */
     function bs_well($atts, $content = null)
     {
-        extract(shortcode_atts(array(
-            "size" => 'size'
-        ), $atts));
+        $class = array('well');
 
-        return '<div class="well well-' . $size . '">' . do_shortcode($content) . '</div>';
+        if (isset($atts['type']) && ($type = preg_replace('/^well-/', '', $atts['type']))) {
+            $class[] = esc_attr('well-' . $type);
+        }
+
+        return sprintf('<div class="%s">%s</div>',
+            join(' ', $class),
+            do_shortcode($content)
+        );
     }
 
-
-    /*--------------------------------------------------------------------------------------
-      *
-      * bs_tabs
-      *
-      * @author Filip Stefansson
-      * @since 1.0
-      * Modified by TwItCh twitch@designweapon.com
-      *Now acts a whole nav/tab/pill shortcode solution!
-      *-------------------------------------------------------------------------------------*/
+    /**
+     * bs_tabs
+     * Modified by TwItCh twitch@designweapon.com
+     * Now acts a whole nav/tab/pill shortcode solution!
+     * 
+     * @return string tabs
+     */
     function bs_tabs($atts, $content = null)
     {
 
@@ -347,15 +335,11 @@ class BoostrapShortcodes
         return $output;
     }
 
-
-    /*--------------------------------------------------------------------------------------
-      *
-      * bs_tab
-      *
-      * @author Filip Stefansson
-      * @since 1.0
-      *
-      *-------------------------------------------------------------------------------------*/
+    /**
+     * bs_tab
+     * 
+     * @return string tab
+     */
     function bs_tab($atts, $content = null)
     {
         if (!isset($GLOBALS['current_tabs'])) {
@@ -377,15 +361,11 @@ class BoostrapShortcodes
         return '<div id="custom-tab-' . $GLOBALS['tabs_count'] . '-' . sanitize_title($title) . '" class="tab-pane ' . $state . '">' . do_shortcode($content) . '</div>';
     }
 
-
-    /*--------------------------------------------------------------------------------------
-      *
-      * bs_collapsibles
-      *
-      * @author Filip Stefansson
-      * @since 1.0
-      *
-      *-------------------------------------------------------------------------------------*/
+    /**
+     * bs_collapsibles
+     * 
+     * @return string collapsibles
+     */
     function bs_collapsibles($atts, $content = null)
     {
         if (isset($GLOBALS['collapsibles_count']))
@@ -417,15 +397,11 @@ class BoostrapShortcodes
         return $output;
     }
 
-
-    /*--------------------------------------------------------------------------------------
-      *
-      * bs_collapse
-      *
-      * @author Filip Stefansson
-      * @since 1.0
-      *
-      *-------------------------------------------------------------------------------------*/
+    /**
+     * bs_collapse
+     * 
+     * @return string collapse
+     */
     function bs_collapse($atts, $content = null)
     {
 
